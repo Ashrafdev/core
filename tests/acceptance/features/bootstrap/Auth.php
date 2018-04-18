@@ -19,8 +19,10 @@
  *
  */
 
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
+use TestHelpers\SetupHelper;
 
 require __DIR__ . '/../../../../lib/composer/autoload.php';
 
@@ -248,6 +250,59 @@ trait Auth {
 			]
 		);
 		$this->extracRequestTokenFromResponse($response);
+	}
+
+	/**
+	 * @Given /^token auth has (not|)\s?been enforced$/
+	 *
+	 * @param string $hasOrNot
+	 *
+	 * @return void
+	 * @throws Exception
+	 */
+	public function tokenAuthHasBeenEnforced($hasOrNot) {
+		$enforce = ($hasOrNot !== "not");
+		if ($enforce) {
+			$value = 'true';
+		} else {
+			$value = 'false';
+		}
+		$this->runOcc(
+			[
+				'config:system:set',
+				'token_auth_enforced',
+				'--type',
+				'boolean',
+				'--value',
+				$value
+			]
+		);
+		$this->runOcc(
+			[
+				'config:system:set',
+				'zzz_enforced',
+				'--type',
+				'boolean',
+				'--value',
+				$value
+			]
+		);
+	}
+
+	/**
+	 * delete token_auth_enforced after all scenarios tagged with '@setsTokenAuthEnforced'
+	 *
+	 * @AfterScenario @setsTokenAuthEnforced
+	 *
+	 * @return void
+	 */
+	public function deleteTokenAuthEnforcedAfterScenario() {
+		$this->runOcc(
+			[
+				'config:system:delete',
+				'token_auth_enforced'
+			]
+		);
 	}
 
 }
