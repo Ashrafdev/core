@@ -287,6 +287,9 @@ trait Auth {
 				$value
 			]
 		);
+		// It takes some time for the change in config.php to really be
+		// recognised at the server.
+		sleep(5);
 	}
 
 	/**
